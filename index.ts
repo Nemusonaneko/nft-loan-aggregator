@@ -17,7 +17,8 @@ async function run() {
   // console.log(await getDataNftFi(nft));
   // console.log("X2Y2");
   // console.log(await getDataX2y2(nft));
-  await getDataArcade(nft);
+  console.log("Arcade");
+  console.log(await getDataArcade(nft));
 }
 
 run();
