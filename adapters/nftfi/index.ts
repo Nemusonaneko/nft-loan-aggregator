@@ -1,57 +1,31 @@
-import { gql, request } from "graphql-request";
-import { SECONDS_IN_A_WEEK } from "../../utils/constants";
-const api =
-  "https://api.thegraph.com/subgraphs/name/nemusonaneko/nftfi-accepted-offers";
-
-async function subgraphCall(nft: string) {
-  const now = Math.floor(Date.now() / 1e3);
-  const weekAgo = now - SECONDS_IN_A_WEEK;
-  const query = gql`
-    query {
-      nfts(where: { id: "${nft.toLowerCase()}" }) {
-        loans(where: {blockTimestamp_gte: "${weekAgo}", blockTimestamp_lte: "${now}"}) {
-          adminFee
-          blockNumber
-          blockTimestamp
-          borrower
-          collateralId
-          lender
-          id
-          loanDuration
-          loanId
-          loanInterestRate
-          loanStart
-          maxRepayment
-          principal
-          referralFee
-          revenueShare
-          revenueSharePartner
-          token
-          blockNumber
-          blockTimestamp
-          txHash
-        }
-      }
-    }
-  `;
-  return (await request(api, query)).nfts;
-}
+import * as dotenv from "dotenv";
+dotenv.config();
 
 export async function getDataNftFi(nft: string) {
-  const subgraphcall = await subgraphCall(nft);
-  if (subgraphcall.length === 0) return [];
-  const loans = subgraphcall[0].loans;
-  const results = [];
-  for (let i = 0; i < loans.length; i++) {
-    const loan = loans[i];
-    results.push({
-      token: loan.token,
-      principal: loan.principal,
-      maxRepayment: loan.maxRepayment,
-      interestRate: loan.loanInterestRate,
-      loanDuration: loan.loanDuration,
-      timestamp: loan.blockTimestamp,
-    });
-  }
-  return results;
+  const now = Math.floor(Date.now() / 1e3);
+  const res = await fetch(
+    `https://sdk-api.nftfi.com/offers?nftAddress=${nft.toLowerCase()}&contractName=v2.loan.fixed.collection`,
+    {
+      headers: {
+        "x-api-key": process.env.NFTFI_API_KEY,
+      },
+    }
+  )
+    .then((res) => res.json())
+    .then((res) => res.results);
+  const result = [];
+  res.forEach((e) => {
+    if (e.terms.loan.expiry >= now) {
+      result.push({
+        token: e.terms.loan.currency,
+        principal: e.terms.loan.principal,
+        repayment: e.terms.loan.repayment,
+        duration: e.terms.loan.duration,
+        expiry: e.terms.loan.expiry,
+        interest: e.terms.loan.interest.bps,
+        url: `https://app.nftfi.com/collection/${nft.toLowerCase()}`,
+      });
+    }
+  });
+  return result;
 }

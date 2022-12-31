@@ -13,12 +13,12 @@ async function run() {
   // console.log(await getDataJpegd(nft));
   // console.log("LlamaLend");
   // console.log(await getDataLlamalend(nft));
-  // console.log("NFTFi");
-  // console.log(await getDataNftFi(nft));
+  console.log("NFTFi");
+  console.log(await getDataNftFi(nft));
   // console.log("X2Y2");
   // console.log(await getDataX2y2(nft));
-  console.log("Arcade");
-  console.log(await getDataArcade(nft));
+  // console.log("Arcade");
+  // console.log(await getDataArcade(nft));
 }
 
 run();
